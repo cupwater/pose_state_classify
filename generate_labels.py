@@ -1,7 +1,7 @@
 '''
 Author: Peng Bo
 Date: 2022-08-11 09:50:26
-LastEditTime: 2022-08-11 20:51:21
+LastEditTime: 2022-08-12 01:24:28
 Description: 
 
 '''
@@ -13,7 +13,7 @@ import pdb
 
 video_fps = 30
 duration_window = 2*video_fps
-smooth_window = 5
+smooth_window = 15
 step_window = 15
 
 
@@ -49,10 +49,16 @@ def parse_labels(label_path):
 def embedded_lms(raw_lms):
     reshaped_lms = raw_lms.reshape(raw_lms.shape[0], -1, 3)
     reshaped_lms = reshaped_lms[:, :7, :]
-    reshaped_lms = reshaped_lms[:, :, :2].reshape(raw_lms.shape[0], -1)
+    reshaped_lms = reshaped_lms[:, :, :2].reshape(raw_lms.shape[0], -1)   
     smooth_lms = reshaped_lms.reshape(-1, smooth_window, reshaped_lms.shape[1])
     smooth_lms = np.mean(smooth_lms, axis=1)
-    return smooth_lms
+
+    abs_diff_vec = np.abs(smooth_lms[1:,:] -  smooth_lms[:-1,:])
+    abs_diff_vec = np.mean(abs_diff_vec, axis=0)
+    moving_vec = smooth_lms[-1, :] - smooth_lms[0, :]
+
+    return moving_vec
+    return np.concatenate([abs_diff_vec, moving_vec], axis=0)
 
 # generate samples for training according the landmarks during particular during window
 
@@ -78,12 +84,12 @@ if __name__ == "__main__":
         "WFJ/WFJ01.mp4",
         "WFJ/WFJ02.mp4",
         "WFJ/WFJ03.mp4",
-        "YW/YW01.mp4",
-        "YW/YW02.mp4",
-        "YW/YW03.mp4",
-        "ZWR/ZWR01.mp4",
-        "ZWR/ZWR02.mp4",
-        "ZWR/ZWR03.mp4"
+        # "YW/YW01.mp4",
+        # "YW/YW02.mp4",
+        # "YW/YW03.mp4",
+        # "ZWR/ZWR01.mp4",
+        # "ZWR/ZWR02.mp4",
+        # "ZWR/ZWR03.mp4"
     ]
 
     lms_list = []
@@ -108,23 +114,30 @@ if __name__ == "__main__":
     features = np.array(features_list).reshape(len(features_list), -1)
     metas = np.array(labels_list).reshape(-1, 1)
 
-    v_max, v_min = np.max(features), np.min(features)
-    normalize_features = ((features-v_min) / (v_max-v_min) - 0.5) * 4
+    def normalize_matrix(features):
+        normalize_features = features.copy()
+        for col in range(features.shape[1]):
+            v_max, v_min = np.max(features[:,col]), np.min(features[:,col])
+            normalize_features[:,col] = ((features[:,col]-v_min) / (v_max-v_min) - 0.5) * 4
+        return normalize_features
+    normalize_features = normalize_matrix(features)
 
     ratio = 0.7
     train_idxs = np.random.choice(
         range(metas.shape[0]), int(metas.shape[0]*0.7), replace=False)
     test_idxs = list(set(list(range(metas.shape[0]))) - set(train_idxs))
-
     train_features = normalize_features[train_idxs, :]
     train_metas = metas[train_idxs, :]
-
     test_features = normalize_features[test_idxs, :]
     test_metas = metas[test_idxs, :]
 
     result_folder = f'datasets/dur{duration_window}_step{step_window}_smo{smooth_window}_ratio{ratio}'
     if not os.path.exists(result_folder):
         os.makedirs(result_folder)
+    np.savetxt(os.path.join(result_folder, 'lms.txt'),
+               normalize_features, fmt='%.3f')
+    np.savetxt(os.path.join(result_folder, 'metas.txt'),
+               metas,    fmt='%d')
     np.savetxt(os.path.join(result_folder, 'train_lms.txt'),
                train_features, fmt='%.3f')
     np.savetxt(os.path.join(result_folder, 'train_metas.txt'),

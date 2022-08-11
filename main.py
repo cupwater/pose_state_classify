@@ -1,7 +1,7 @@
 '''
 Author: Peng Bo
 Date: 2022-08-11 21:05:24
-LastEditTime: 2022-08-11 22:27:05
+LastEditTime: 2022-08-12 00:52:29
 Description: 
 
 '''
@@ -12,6 +12,7 @@ import argparse
 import yaml
 import os
 import random
+import pdb
 
 import torch
 import torch.nn as nn
@@ -30,9 +31,10 @@ def train(args, model, device, train_loader, criterion, optimizer, epoch):
         optimizer.zero_grad()
         output = model(data)
         loss = criterion(output, target)
+        # pdb.set_trace()
         loss.backward()
         optimizer.step()
-        if batch_idx % 50 == 0:
+        if batch_idx % 200 == 0:
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                 epoch, batch_idx * len(data), len(train_loader.dataset),
                 100. * batch_idx / len(train_loader), loss.item()))

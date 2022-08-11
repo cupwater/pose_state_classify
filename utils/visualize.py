@@ -3,7 +3,7 @@
 '''
 Author: Peng Bo
 Date: 2022-07-25 13:30:40
-LastEditTime: 2022-08-11 21:04:45
+LastEditTime: 2022-08-12 01:18:36
 Description: 
 
 '''
@@ -35,34 +35,37 @@ def tsne_visualize(X, y):
 
 if __name__ == "__main__":
     
-    # read all the landmarks in the folder
-    lms_list = []
-    diff_lms_list = []
-    for file in os.listdir(sys.argv[1]):
-        lms = np.loadtxt(os.path.join(sys.argv[1], file))
-        diff_lms = lms[1::4, :] - lms[:-1:4, :]
-        diff_lms_list.append(diff_lms)
-        lms_list.append(lms)
+    # # read all the landmarks in the folder
+    # lms_list = []
+    # diff_lms_list = []
+    # for file in os.listdir(sys.argv[1]):
+    #     lms = np.loadtxt(os.path.join(sys.argv[1], file))
+    #     diff_lms = lms[1::4, :] - lms[:-1:4, :]
+    #     diff_lms_list.append(diff_lms)
+    #     lms_list.append(lms)
 
     
-    # normalize the landmarks
-    lms_whole = np.concatenate(lms_list, axis=0)[:, :14]
-    v_max, v_min = np.max(lms_whole), np.min(lms_whole)
-    normalize_lms_whole = (lms_whole-v_min) / (v_max-v_min)
+    # # normalize the landmarks
+    # lms_whole = np.concatenate(lms_list, axis=0)[:, :14]
+    # v_max, v_min = np.max(lms_whole), np.min(lms_whole)
+    # normalize_lms_whole = (lms_whole-v_min) / (v_max-v_min)
     
-    diff_lms_whole = np.concatenate(diff_lms_list, axis=0)[:, :14]
-    v_max, v_min = np.max(diff_lms_whole), np.min(diff_lms_whole)
-    normalize_diff_lms_whole = (diff_lms_whole-v_min) / (v_max-v_min)
+    # diff_lms_whole = np.concatenate(diff_lms_list, axis=0)[:, :14]
+    # v_max, v_min = np.max(diff_lms_whole), np.min(diff_lms_whole)
+    # normalize_diff_lms_whole = (diff_lms_whole-v_min) / (v_max-v_min)
 
     
-    labels_list = []
-    diff_labels_list = []
-    for idx, (lms,diff_lms) in enumerate(zip(lms_list, diff_lms_list)):
-        labels_list = labels_list + [ idx for _ in range(lms.shape[0])]
-        diff_labels_list = diff_labels_list + [ idx for _ in range(diff_lms.shape[0])]
+    # labels_list = []
+    # diff_labels_list = []
+    # for idx, (lms,diff_lms) in enumerate(zip(lms_list, diff_lms_list)):
+    #     labels_list = labels_list + [ idx for _ in range(lms.shape[0])]
+    #     diff_labels_list = diff_labels_list + [ idx for _ in range(diff_lms.shape[0])]
     
-    labels = np.array(labels_list)
-    diff_labels = np.array(diff_labels_list)
+    # labels = np.array(labels_list)
+    # diff_labels = np.array(diff_labels_list)
+
+    normalize_lms_whole = np.loadtxt('datasets/dur60_step15_smo15_ratio0.7/train_lms.txt')
+    labels = np.loadtxt('datasets/dur60_step15_smo15_ratio0.7/train_metas.txt')
     
     tsne_visualize(normalize_lms_whole, labels)
     # tsne_visualize(normalize_diff_lms_whole, diff_labels)
