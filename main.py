@@ -1,7 +1,7 @@
 '''
 Author: Peng Bo
 Date: 2022-08-11 21:05:24
-LastEditTime: 2022-08-12 00:52:29
+LastEditTime: 2022-08-12 22:20:04
 Description: 
 
 '''
@@ -26,18 +26,28 @@ import dataset
 
 def train(args, model, device, train_loader, criterion, optimizer, epoch):
     model.train()
+
+    sample_sum  = 0
+    correct_sum = 0
+
     for batch_idx, (data, target) in enumerate(train_loader):
         data, target = data.to(device), target.to(device)
         optimizer.zero_grad()
         output = model(data)
         loss = criterion(output, target)
-        # pdb.set_trace()
         loss.backward()
+
+        sample_sum += output.size(0)
+        pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
+        correct_sum += pred.eq(target.view_as(pred)).sum().item()
+        
+        
         optimizer.step()
-        if batch_idx % 200 == 0:
-            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
+        if batch_idx % 50 == 0:
+            print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.4f}\tAcc: {:.3f}'.format(
                 epoch, batch_idx * len(data), len(train_loader.dataset),
-                100. * batch_idx / len(train_loader), loss.item()))
+                100. * batch_idx / len(train_loader), loss.item(),
+                100. * correct_sum/sample_sum))
 
 
 def test(model, device, criterion, test_loader):
@@ -84,15 +94,14 @@ def main(config_file):
 
     # prepare model, optimizer, scheduler
     model = MLNet(input_dim=trainset.feature_dim()).to(device)
-    optimizer = optim.Adadelta(model.parameters(), lr=commconfig['lr'])
     criterion = nn.CrossEntropyLoss()
-    scheduler = StepLR(optimizer, step_size=1, gamma=commconfig['gamma'])
+    optimizer = optim.Adam(model.parameters(), lr=commconfig['lr'])
+    # scheduler = StepLR(optimizer, step_size=1, gamma=commconfig['gamma'])
     
     # start training
     for epoch in range(1, commconfig['epoch'] + 1):
         train(args, model, device, trainloader, criterion, optimizer, epoch)
         test(model, device, criterion, testloader)
-        scheduler.step()
 
     torch.save(model.state_dict(), os.path.join(commconfig['save_path'], 'weight.pt'))
 

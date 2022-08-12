@@ -1,7 +1,7 @@
 '''
 Author: Peng Bo
 Date: 2022-06-08 13:28:30
-LastEditTime: 2022-08-12 00:54:28
+LastEditTime: 2022-08-12 22:06:31
 Description: 
 
 '''
@@ -16,8 +16,8 @@ __all__ = ['LandmarkDataset']
 
 class LandmarkDataset(Dataset):
     def __init__(self, features_path, metas_path):
-        self.features = np.loadtxt(features_path).astype(np.float32)[:10]
-        self.metas    = np.loadtxt(metas_path).astype(np.int32)[:10]
+        self.features = np.loadtxt(features_path).astype(np.float32)
+        self.metas    = np.loadtxt(metas_path).astype(np.int32)
 
     def __getitem__(self, index):
         feat  = torch.FloatTensor(torch.from_numpy(self.features[index]))

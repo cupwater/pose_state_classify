@@ -3,22 +3,19 @@
 '''
 Author: Peng Bo
 Date: 2022-07-25 13:30:40
-LastEditTime: 2022-08-12 01:18:36
+LastEditTime: 2022-08-12 21:33:34
 Description: 
 
 '''
 
 import numpy as np
-import sys
-import os
-import pdb
 from sklearn import manifold
 import matplotlib.pyplot as plt
 
 
 def tsne_visualize(X, y):
     '''t-SNE'''
-    tsne = manifold.TSNE(n_components=2, init='pca', random_state=501)
+    tsne = manifold.TSNE(n_components=2, init='pca', random_state=100)
     X_tsne = tsne.fit_transform(X)
     # visualize the distributions of landmarks
     '''嵌入空间可视化'''
@@ -64,8 +61,8 @@ if __name__ == "__main__":
     # labels = np.array(labels_list)
     # diff_labels = np.array(diff_labels_list)
 
-    normalize_lms_whole = np.loadtxt('datasets/dur60_step15_smo15_ratio0.7/train_lms.txt')
-    labels = np.loadtxt('datasets/dur60_step15_smo15_ratio0.7/train_metas.txt')
+    normalize_lms_whole = np.loadtxt('datasets/dur30_step10_smo5_ratio0.7/lms.txt')
+    labels = np.loadtxt('datasets/dur30_step10_smo5_ratio0.7/metas.txt')
     
     tsne_visualize(normalize_lms_whole, labels)
     # tsne_visualize(normalize_diff_lms_whole, diff_labels)
