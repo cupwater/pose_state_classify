@@ -1,7 +1,7 @@
 '''
 Author: Peng Bo
 Date: 2022-08-11 21:05:24
-LastEditTime: 2022-08-12 22:20:04
+LastEditTime: 2022-10-19 09:02:19
 Description: 
 
 '''
@@ -19,6 +19,8 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.utils.data as data
 from torch.optim.lr_scheduler import StepLR
+
+import torch.onnx
 
 from models import MLNet
 import dataset
@@ -105,11 +107,15 @@ def main(config_file):
 
     torch.save(model.state_dict(), os.path.join(commconfig['save_path'], 'weight.pt'))
 
+    dummy_input = torch.randn(1, 420)
+    # dummy_input = torch.randn(1, 3, 480, 640).to("cuda") #if input size is 640*480
+    torch.onnx.export(model, dummy_input, "pose_state_classifier.onnx", verbose=False, input_names=['input'], output_names=['state'])
+
 
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser(description='Pose state classify')
-    parser.add_argument('--config-file', type=str,default='experiments/template/config.yaml')
+    parser.add_argument('--config-file', type=str,default='experiments/dur60_step5_smo2_ratio0.9_1019/config.yaml')
     args = parser.parse_args()
     os.environ["OMP_NUM_THREADS"] = "1"
     main(args.config_file)
